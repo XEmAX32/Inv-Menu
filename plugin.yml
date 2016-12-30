@@ -1,0 +1,4 @@
+name: invMenu
+version: 1.0
+api: 1.0
+main: menu\main
