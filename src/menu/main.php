@@ -1,5 +1,23 @@
 <?php
 
+/**
+ *  __  __          _____  ______   ______     __
+ * |  \/  |   /\   |  __ \|  ____| |  _ \ \   / /
+ * | \  / |  /  \  | |  | | |__    | |_) \ \_/ /
+ * | |\/| | / /\ \ | |  | |  __|   |  _ < \   /
+ * | |  | |/ ____ \| |__| | |____  | |_) | | |
+ * |_|_ |_/_/    \_\_____/|______| |____/__|_|__ _____ _  _  ____ ___  __  ___
+ *  / _|                    / _ \ / _ \____  / /| ____| || ||___ \__ \/_ |/ _ \
+ * | |_ _ __ __ _  __ _  __| (_) | (_) |  / / /_| |__ | || |_ __) | ) || | | | |
+ * |  _| '__/ _` |/ _` |/ _ \__, |> _ <  / / '_ \___ \|__   _|__ < / / | | | | |
+ * | | | | | (_| | (_| | (_) |/ /| (_) |/ /| (_) |__) |  | | ___) / /_ | | |_| |
+ * |_| |_|  \__,_|\__, |\___//_/  \___//_/  \___/____/   |_||____/____||_|\___/
+ *                 __/ |
+ *               |___/
+ * @link http://vk.com/frago9876543210
+ * @link http://github.com/Frago9876543210
+ **/
+
 namespace menu;
 
 use pocketmine\block\Block;
@@ -26,10 +44,22 @@ class main extends PluginBase implements Listener {
 	public $item;
 	public $y;
 	public $items;
+	public $name;
+	public $slot;
 
 	public function onEnable(){
-		$this->item = 345;
+		//server menu item
+		$this->item = array(
+			'item' => array(
+				'name' => 'menu',
+				'id' => 345,
+				'damage' => 0,
+				'count' => 1,
+			)
+		);
+		//fake chest Y
 		$this->y = 4;
+		//slot[parameter]
 		$this->items = array(
 			'0' => array(
 				'name' => 'item',
@@ -48,9 +78,15 @@ class main extends PluginBase implements Listener {
      */
 	public function give(PlayerJoinEvent $e) {
 		$p = $e->getPlayer();
-		$item = Item::get($this->item, 0, 1);
-		$item->setCustomName('§a Меню сервера');
-		$p->getInventory()->setItemInHand($item);
+		$inv = $p->getInventory();
+		for($i = 0; $i <= 35; $i++) {
+			if (@$inv->getItem($i)->getCustomName() == $this->item['item']['name'] and @$inv->getItem($i)->getId() == $this->item['item']['id'] and @$inv->getItem($i)->getDamage() == $this->item['item']['damage'] and @$inv->getItem($i)->getCount() == $this->item['item']['count']) {
+				$inv->clear($i);
+			}
+		}
+		$item = Item::get($this->item['item']['id'], $this->item['item']['damage'], $this->item['item']['count']);
+		$item->setCustomName($this->item['item']['name']);
+		$inv->setItemInHand($item);
 	}
 
 	/**
@@ -58,7 +94,7 @@ class main extends PluginBase implements Listener {
      */
 	public function openMenu(PlayerInteractEvent $e){
 		$p = $e->getPlayer();
-		if($e->getItem()->getID() == $this->item){
+		if($e->getItem()->getCustomName() == $this->item['item']['name'] and $e->getItem()->getId() == $this->item['item']['id'] and $e->getItem()->getDamage() == $this->item['item']['damage'] and $e->getItem()->getCount() == $this->item['item']['count']){
 			$block = $p->getLevel()->getBlock(new Vector3($p->getX(), $p->getY() - $this->y, $p->getZ()))->getID();
 			$p->getLevel()->setBlock(new Vector3($p->getX(), $p->getY() - $this->y, $p->getZ()), new \pocketmine\block\Chest(), true, true);
 			$nbt = new CompoundTag( "", [new ListTag("Items", []),new StringTag("id", Tile::CHEST),new IntTag("x",$p->getX()),new IntTag("y", $p->getY() - $this->y),new IntTag("z", $p->getZ())]);
