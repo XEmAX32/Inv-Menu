@@ -91,15 +91,8 @@ class main extends PluginBase implements Listener {
 	/**
 	 * @param PlayerDropItemEvent $e
      */
-	public function drop(PlayerDropItemEvent $e){
-		$p = $e->getPlayer();
-		//$item = $e->getItem();
-		for($i = 0; $i <= 35; $i++) {
-			@$item = $p->getInventory()->getItem($i);
-			if($item->getCustomName() == @$this->item[$i]['name'] and $item->getId() == @$this->items[$i]['id'] and $item->getDamage() == @$this->items[$i]['damage'] and $item->getCount() == @$this->items[$i]['count']){
-				$e->setCancelled();
-			}
-		}
+	public function drop(PlayerDropItemEvent $e) {
+		$e->setCancelled();
 	}
 
 	/**
