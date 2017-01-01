@@ -22,6 +22,7 @@ namespace menu;
 
 use pocketmine\block\Block;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\item\Item;
@@ -42,16 +43,14 @@ use pocketmine\item\enchantment\Enchantment;
 class main extends PluginBase implements Listener {
 
 	public $item;
-	public $y;
 	public $items;
-	public $name;
-	public $slot;
+	public $y;
 
-	public function onEnable(){
+	public function onEnable() {
 		//server menu item
 		$this->item = array(
 			'item' => array(
-				'name' => 'menu',
+				'name' => 'server menu',
 				'id' => 345,
 				'damage' => 0,
 				'count' => 1,
@@ -90,9 +89,23 @@ class main extends PluginBase implements Listener {
 	}
 
 	/**
+	 * @param PlayerDropItemEvent $e
+     */
+	public function drop(PlayerDropItemEvent $e){
+		$p = $e->getPlayer();
+		//$item = $e->getItem();
+		for($i = 0; $i <= 35; $i++) {
+			@$item = $p->getInventory()->getItem($i);
+			if($item->getCustomName() == @$this->item[$i]['name'] and $item->getId() == @$this->items[$i]['id'] and $item->getDamage() == @$this->items[$i]['damage'] and $item->getCount() == @$this->items[$i]['count']){
+				$e->setCancelled();
+			}
+		}
+	}
+
+	/**
 	 * @param PlayerInteractEvent $e
      */
-	public function openMenu(PlayerInteractEvent $e){
+	public function openMenu(PlayerInteractEvent $e) {
 		$p = $e->getPlayer();
 		if($e->getItem()->getCustomName() == $this->item['item']['name'] and $e->getItem()->getId() == $this->item['item']['id'] and $e->getItem()->getDamage() == $this->item['item']['damage'] and $e->getItem()->getCount() == $this->item['item']['count']){
 			$block = $p->getLevel()->getBlock(new Vector3($p->getX(), $p->getY() - $this->y, $p->getZ()))->getID();
@@ -124,7 +137,7 @@ class main extends PluginBase implements Listener {
 	 * @param Tile $tile
 	 * @param Block $block
      */
-	public function ChestTask($p, $tile, $block){
+	public function ChestTask($p, $tile, $block) {
 		if(count($tile->getInventory()->getViewers()) == 0){
 			$p->getLevel()->setBlock(new Vector3($p->getX(), $p->getY() - $this->y, $p->getZ()), new Block($block));
 		}
