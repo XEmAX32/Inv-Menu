@@ -85,7 +85,8 @@ class main extends PluginBase implements Listener {
 		}
 		$item = Item::get($this->item['item']['id'], $this->item['item']['damage'], $this->item['item']['count']);
 		$item->setCustomName($this->item['item']['name']);
-		$inv->setItemInHand($item);
+		$inv->addItem($item);
+		$inv->setHotbarSlotIndex(345, 1);
 	}
 
 	/**
