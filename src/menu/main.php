@@ -72,9 +72,7 @@ class main extends PluginBase implements Listener {
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 
-	/**
-	 * @param PlayerJoinEvent $e
-     */
+
 	public function give(PlayerJoinEvent $e) {
 		$p = $e->getPlayer();
 		$inv = $p->getInventory();
@@ -89,16 +87,10 @@ class main extends PluginBase implements Listener {
 		$inv->setHotbarSlotIndex(345, 1);
 	}
 
-	/**
-	 * @param PlayerDropItemEvent $e
-     */
 	public function drop(PlayerDropItemEvent $e) {
 		$e->setCancelled();
 	}
 
-	/**
-	 * @param PlayerInteractEvent $e
-     */
 	public function openMenu(PlayerInteractEvent $e) {
 		$p = $e->getPlayer();
 		if($e->getItem()->getCustomName() == $this->item['item']['name'] and $e->getItem()->getId() == $this->item['item']['id'] and $e->getItem()->getDamage() == $this->item['item']['damage'] and $e->getItem()->getCount() == $this->item['item']['count']){
@@ -106,7 +98,7 @@ class main extends PluginBase implements Listener {
 			$p->getLevel()->setBlock(new Vector3($p->getX(), $p->getY() - $this->y, $p->getZ()), new \pocketmine\block\Chest(), true, true);
 			$nbt = new CompoundTag( "", [new ListTag("Items", []),new StringTag("id", Tile::CHEST),new IntTag("x",$p->getX()),new IntTag("y", $p->getY() - $this->y),new IntTag("z", $p->getZ())]);
 			$nbt->Items->setTagType(NBT::TAG_Compound);
-			$tile = Tile::createTile("Chest", $p->getLevel()->getChunk($p->getX() >> 4, $p->getZ() >> 4), $nbt);
+			$tile = Tile::createTile("Chest", $p->getLevel(), $nbt);
 			if($tile instanceof Chest){
 				for($i = 0; $i <= 26; $i++){
 					if(@$this->items[$i] !== null){
@@ -126,11 +118,6 @@ class main extends PluginBase implements Listener {
 		}
 	}
 
-	/**
-	 * @param Player $p
-	 * @param Tile $tile
-	 * @param Block $block
-     */
 	public function ChestTask($p, $tile, $block) {
 		if(count($tile->getInventory()->getViewers()) == 0){
 			$p->getLevel()->setBlock(new Vector3($p->getX(), $p->getY() - $this->y, $p->getZ()), new Block($block));
