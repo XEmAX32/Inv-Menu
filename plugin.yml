@@ -1,4 +1,4 @@
-name: invMenu
-version: 1.0
-api: 1.0
-main: menu\main
+name: InventoryMenu
+main: InventoryMenu\Main
+api: [3.0.0-ALPHA6, 3.0.0-ALPHA7, 3.0.0, 3.0.1]
+version: 1.0.0
