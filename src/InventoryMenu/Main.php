@@ -34,7 +34,7 @@ class Main extends PluginBase implements Listener
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
     }
 
-    public function onDataPacketReceive(DataPacketReceiveEvent $e): void
+    public function onDataPacketReceive(DataPacketReceiveEvent $e)
     {
         $packet = $e->getPacket();
         $player = $e->getPlayer();
@@ -92,7 +92,7 @@ class Main extends PluginBase implements Listener
          */
     }
 
-    public function onClick(PlayerInteractEvent $e): void
+    public function onClick(PlayerInteractEvent $e)
     {
         if ($e->getAction() == PlayerInteractEvent::RIGHT_CLICK_BLOCK) {
             $player = $e->getPlayer();
