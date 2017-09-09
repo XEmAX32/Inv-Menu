@@ -1,4 +1,4 @@
 # Inv-Menu
-Inventory menu on PocketMine
+Inventory menu for PocketMine
 <br>
 ![](https://thumbs.gfycat.com/ThornyHotAstarte.webp)
