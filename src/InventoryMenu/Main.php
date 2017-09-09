@@ -72,7 +72,6 @@ class Main extends PluginBase implements Listener
             /** @var Vector3 $v3 */
             $v3 = $this->chest[$player->getName()][1];
             $this->updateBlock($player, $player->getLevel()->getBlock($v3)->getId(), $v3);
-            //todo: need to remove the chest by 100%
             $player->getInventory()->setContents($this->inv[$player->getName()]);
             $this->clearData($player);
         } elseif ($packet instanceof DropItemPacket) {
