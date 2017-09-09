@@ -12,6 +12,10 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\NBT;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\StringTag;
+use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
 use pocketmine\network\mcpe\protocol\ContainerSetContentPacket;
@@ -98,10 +102,10 @@ class Main extends PluginBase implements Listener
             $player = $e->getPlayer();
             switch ($e->getItem()->getId()) {
                 case Item::COMPASS:
-                    $this->createChest($player, [Item::get(1, 0, 1), Item::get(2, 0, 1)], 1);
+                    $this->createChest($player, [Item::get(1, 0, 1), Item::get(2, 0, 1)], 1, "Select block");
                     break;
                 case Item::CLOCK:
-                    $this->createChest($player, [Item::get(267, 0, 1)->setCustomName("§eSkyWars"), Item::get(276, 0, 1)->setCustomName("§aHungerGames")], 2);
+                    $this->createChest($player, [Item::get(267, 0, 1)->setCustomName("§eSkyWars"), Item::get(276, 0, 1)->setCustomName("§aHungerGames")], 2, "Select mini game");
                     break;
             }
         }
@@ -120,7 +124,7 @@ class Main extends PluginBase implements Listener
         $this->clearData($e->getPlayer());
     }
 
-    public function createChest(Player $player, array $items, int $id)
+    public function createChest(Player $player, array $items, int $id, string $title)
     {
         $this->clearData($player);
 
@@ -130,18 +134,31 @@ class Main extends PluginBase implements Listener
         $this->chest[$player->getName()] = [$id, $v3];
         $this->updateBlock($player, 54, $v3);
 
-        $pk = new ContainerOpenPacket;
-        $pk->windowid = 10;
-        $pk->type = 0;
+        $nbt = new NBT(NBT::LITTLE_ENDIAN);
+        $nbt->setData(new CompoundTag(
+            "", [
+                new StringTag("CustomName", $title)
+            ]
+        ));
+        $pk = new BlockEntityDataPacket();
         $pk->x = $v3->x;
         $pk->y = $v3->y;
         $pk->z = $v3->z;
+        $pk->namedtag = $nbt->write(true);
         $player->dataPacket($pk);
 
-        $pk1 = new ContainerSetContentPacket;
+        $pk1 = new ContainerOpenPacket;
         $pk1->windowid = 10;
-        $pk1->slots = $items;
+        $pk1->type = 0;
+        $pk1->x = $v3->x;
+        $pk1->y = $v3->y;
+        $pk1->z = $v3->z;
         $player->dataPacket($pk1);
+
+        $pk2 = new ContainerSetContentPacket;
+        $pk2->windowid = 10;
+        $pk2->slots = $items;
+        $player->dataPacket($pk2);
     }
 
     public function updateBlock(Player $player, int $id, Vector3 $v3)
