@@ -129,7 +129,7 @@ class Main extends PluginBase implements Listener
         $this->clearData($e->getPlayer());
     }
 
-    public function createChest(Player $player, array $items, int $id, string $title, $double = false)
+    public function createChest(Player $player, array $items, int $id, string $title, bool $double = false)
     {
         $this->clearData($player);
 
