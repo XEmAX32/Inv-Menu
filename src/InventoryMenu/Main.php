@@ -14,6 +14,7 @@ use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
@@ -76,6 +77,10 @@ class Main extends PluginBase implements Listener
             /** @var Vector3 $v3 */
             $v3 = $this->chest[$player->getName()][1];
             $this->updateBlock($player, $player->getLevel()->getBlock($v3)->getId(), $v3);
+            if (isset($this->chest[$player->getName()][2])) {
+                $v3 = $v3->setComponents($v3->x + 1, $v3->y, $v3->z);
+                $this->updateBlock($player, $player->getLevel()->getBlock($v3)->getId(), $v3);
+            }
             $player->getInventory()->setContents($this->inv[$player->getName()]);
             $this->clearData($player);
         } elseif ($packet instanceof DropItemPacket) {
@@ -105,7 +110,7 @@ class Main extends PluginBase implements Listener
                     $this->createChest($player, [Item::get(1, 0, 1), Item::get(2, 0, 1)], 1, "Select block");
                     break;
                 case Item::CLOCK:
-                    $this->createChest($player, [Item::get(267, 0, 1)->setCustomName("§eSkyWars"), Item::get(276, 0, 1)->setCustomName("§aHungerGames")], 2, "Select mini game");
+                    $this->createChest($player, [Item::get(267, 0, 1)->setCustomName("§eSkyWars"), Item::get(276, 0, 1)->setCustomName("§aHungerGames")], 2, "Select mini game", true);
                     break;
             }
         }
@@ -124,7 +129,7 @@ class Main extends PluginBase implements Listener
         $this->clearData($e->getPlayer());
     }
 
-    public function createChest(Player $player, array $items, int $id, string $title)
+    public function createChest(Player $player, array $items, int $id, string $title, $double = false)
     {
         $this->clearData($player);
 
@@ -135,17 +140,30 @@ class Main extends PluginBase implements Listener
         $this->updateBlock($player, 54, $v3);
 
         $nbt = new NBT(NBT::LITTLE_ENDIAN);
-        $nbt->setData(new CompoundTag(
-            "", [
-                new StringTag("CustomName", $title)
-            ]
-        ));
-        $pk = new BlockEntityDataPacket();
+        if ($double) {
+            $this->chest[$player->getName()][2] = true;
+            $this->updateBlock($player, 54, new Vector3($v3->x + 1, $v3->y, $v3->z));
+            $nbt->setData(new CompoundTag(
+                "", [
+                    new StringTag("CustomName", $title),
+                    new IntTag("pairx", $v3->x + 1),
+                    new IntTag("pairz", $v3->z)
+                ]
+            ));
+        } else {
+            $nbt->setData(new CompoundTag(
+                "", [new StringTag("CustomName", $title)]
+            ));
+        }
+        $pk = new BlockEntityDataPacket;
         $pk->x = $v3->x;
         $pk->y = $v3->y;
         $pk->z = $v3->z;
         $pk->namedtag = $nbt->write(true);
         $player->dataPacket($pk);
+
+        if ($double)
+            usleep(51000);
 
         $pk1 = new ContainerOpenPacket;
         $pk1->windowid = 10;
@@ -174,7 +192,7 @@ class Main extends PluginBase implements Listener
 
     public function getVector(Player $player): Vector3
     {
-        return new Vector3($player->x, $player->y - 3, $player->z);
+        return new Vector3(intval($player->x), intval($player->y) - 2, intval($player->z));
     }
 
     public function clearData(Player $player)
