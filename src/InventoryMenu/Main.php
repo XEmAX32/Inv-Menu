@@ -19,9 +19,9 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
-use pocketmine\network\mcpe\protocol\ContainerSetContentPacket;
-use pocketmine\network\mcpe\protocol\ContainerSetSlotPacket;
-use pocketmine\network\mcpe\protocol\DropItemPacket;
+use pocketmine\network\mcpe\protocol\InventoryContentPacket;
+use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
+use pocketmine\network\mcpe\protocol\types\NetworkInventoryAction;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
@@ -31,8 +31,6 @@ class Main extends PluginBase implements Listener
 
     /** @var  array */
     private $chest;
-    /** @var  array */
-    private $inv;
 
     public function onEnable()
     {
@@ -43,15 +41,18 @@ class Main extends PluginBase implements Listener
     {
         $packet = $e->getPacket();
         $player = $e->getPlayer();
-        if ($packet instanceof ContainerSetSlotPacket) {
-            if (!isset($this->chest[$player->getName()])) return;
-            if ($packet->windowid == 10 && $this->chest[$player->getName()] && $packet->item->getId() == 0) {
+        if ($packet instanceof InventoryTransactionPacket) {
+            if (!isset($this->chest[$player->getName()]) or !isset($packet->actions[0])) return;
+            /** @var NetworkInventoryAction $action */
+            $action = $packet->actions[0];
+            //NOTE: now you can get item from $packet->actions
+            if ($packet->transactionType === 0 && $this->chest[$player->getName()]) {
                 $pk = new ContainerClosePacket();
-                $pk->windowid = 10;
+                $pk->windowId = 10;
                 $player->dataPacket($pk);
                 switch ($this->chest[$player->getName()][0]) { //chest id
                     case 1:
-                        switch ($packet->slot) {
+                        switch ($action->inventorySlot) {
                             case 0:
                                 $player->sendMessage("You select stone block");
                                 break;
@@ -61,7 +62,7 @@ class Main extends PluginBase implements Listener
                         }
                         break;
                     case 2:
-                        switch ($packet->slot) {
+                        switch ($action->inventorySlot) {
                             case 0:
                                 $player->sendMessage("You select sky wars");
                                 break;
@@ -73,7 +74,7 @@ class Main extends PluginBase implements Listener
                 }
             }
         } elseif ($packet instanceof ContainerClosePacket) {
-            if (!isset($this->chest[$player->getName()]) or !isset($this->inv[$player->getName()])) return;
+            if (!isset($this->chest[$player->getName()])) return;
             /** @var Vector3 $v3 */
             $v3 = $this->chest[$player->getName()][1];
             $this->updateBlock($player, $player->getLevel()->getBlock($v3)->getId(), $v3);
@@ -81,24 +82,8 @@ class Main extends PluginBase implements Listener
                 $v3 = $v3->setComponents($v3->x + 1, $v3->y, $v3->z);
                 $this->updateBlock($player, $player->getLevel()->getBlock($v3)->getId(), $v3);
             }
-            $player->getInventory()->setContents($this->inv[$player->getName()]);
             $this->clearData($player);
-        } elseif ($packet instanceof DropItemPacket) {
-            if (!isset($this->chest[$player->getName()])) return;
-            $e->setCancelled();
         }
-        /*
-         * without shift:
-         *  1. ContainerSetSlotPacket
-         *  2. DropItemPacket
-         *  3. ContainerClosePacket
-         *
-         * with shift
-         *  1. ContainerSetSlotPacket
-         *  2. ContainerClosePacket
-         *
-         * I hope this will not be in MCPE 1.2
-         */
     }
 
     public function onClick(PlayerInteractEvent $e)
@@ -133,8 +118,6 @@ class Main extends PluginBase implements Listener
     {
         $this->clearData($player);
 
-        $this->inv[$player->getName()] = $player->getInventory()->getContents();
-
         $v3 = $this->getVector($player);
         $this->chest[$player->getName()] = [$id, $v3];
         $this->updateBlock($player, 54, $v3);
@@ -166,16 +149,16 @@ class Main extends PluginBase implements Listener
             usleep(51000);
 
         $pk1 = new ContainerOpenPacket;
-        $pk1->windowid = 10;
+        $pk1->windowId = 10;
         $pk1->type = 0;
         $pk1->x = $v3->x;
         $pk1->y = $v3->y;
         $pk1->z = $v3->z;
         $player->dataPacket($pk1);
 
-        $pk2 = new ContainerSetContentPacket;
-        $pk2->windowid = 10;
-        $pk2->slots = $items;
+        $pk2 = new InventoryContentPacket();
+        $pk2->windowId = 10;
+        $pk2->items = $items;
         $player->dataPacket($pk2);
     }
 
@@ -199,7 +182,5 @@ class Main extends PluginBase implements Listener
     {
         if (isset($this->chest[$player->getName()]))
             unset($this->chest[$player->getName()]);
-        if (isset($this->inv[$player->getName()]))
-            unset($this->inv[$player->getName()]);
     }
 }
