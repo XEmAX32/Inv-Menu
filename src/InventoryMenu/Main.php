@@ -32,12 +32,12 @@ class Main extends PluginBase implements Listener
     /** @var  array */
     private $chest;
 
-    public function onEnable()
+    public function onEnable(): void
     {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
     }
 
-    public function onDataPacketReceive(DataPacketReceiveEvent $e)
+    public function onDataPacketReceive(DataPacketReceiveEvent $e): void
     {
         $packet = $e->getPacket();
         $player = $e->getPlayer();
@@ -86,7 +86,7 @@ class Main extends PluginBase implements Listener
         }
     }
 
-    public function onClick(PlayerInteractEvent $e)
+    public function onClick(PlayerInteractEvent $e): void
     {
         if ($e->getAction() == PlayerInteractEvent::RIGHT_CLICK_BLOCK) {
             $player = $e->getPlayer();
@@ -101,7 +101,7 @@ class Main extends PluginBase implements Listener
         }
     }
 
-    public function onPlayerJoin(PlayerJoinEvent $e)
+    public function onPlayerJoin(PlayerJoinEvent $e): void
     {
         $inv = $e->getPlayer()->getInventory();
         $inv->clearAll();
@@ -109,12 +109,19 @@ class Main extends PluginBase implements Listener
         $inv->setItem(1, Item::get(Item::CLOCK, 0, 1)->setCustomName("Select mini game"));
     }
 
-    public function onPlayerQuit(PlayerQuitEvent $e)
+    public function onPlayerQuit(PlayerQuitEvent $e): void
     {
         $this->clearData($e->getPlayer());
     }
 
-    public function createChest(Player $player, array $items, int $id, string $title, bool $double = false)
+    /**
+     * @param Player $player
+     * @param array $items  items array
+     * @param int $id       chest id
+     * @param string $title chest title
+     * @param bool $double  double chest or not? default = false
+     */
+    public function createChest(Player $player, array $items, int $id, string $title, bool $double = false): void
     {
         $this->clearData($player);
 
@@ -134,9 +141,7 @@ class Main extends PluginBase implements Listener
                 ]
             ));
         } else {
-            $nbt->setData(new CompoundTag(
-                "", [new StringTag("CustomName", $title)]
-            ));
+            $nbt->setData(new CompoundTag("", [new StringTag("CustomName", $title)]));
         }
         $pk = new BlockEntityDataPacket;
         $pk->x = $v3->x;
@@ -145,8 +150,7 @@ class Main extends PluginBase implements Listener
         $pk->namedtag = $nbt->write(true);
         $player->dataPacket($pk);
 
-        if ($double)
-            usleep(51000);
+        if ($double) usleep(51000);
 
         $pk1 = new ContainerOpenPacket;
         $pk1->windowId = 10;
@@ -162,7 +166,7 @@ class Main extends PluginBase implements Listener
         $player->dataPacket($pk2);
     }
 
-    public function updateBlock(Player $player, int $id, Vector3 $v3)
+    public function updateBlock(Player $player, int $id, Vector3 $v3): void
     {
         $pk = new UpdateBlockPacket;
         $pk->x = $v3->x;
@@ -178,9 +182,8 @@ class Main extends PluginBase implements Listener
         return new Vector3(intval($player->x), intval($player->y) - 2, intval($player->z));
     }
 
-    public function clearData(Player $player)
+    public function clearData(Player $player): void
     {
-        if (isset($this->chest[$player->getName()]))
-            unset($this->chest[$player->getName()]);
+        if (isset($this->chest[$player->getName()])) unset($this->chest[$player->getName()]);
     }
 }
