@@ -1,4 +1,4 @@
 name: InventoryMenu
-main: InventoryMenu\Main
+main: InventoryMenu\API
 api: [3.0.0-ALPHA8]
 version: 1.0.0
