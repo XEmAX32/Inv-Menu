@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace InventoryMenu;
 
 
-use InventoryMenu\event\CloseChestEvent;
 use InventoryMenu\event\InventoryClickEvent;
 use pocketmine\block\BlockIds;
 use pocketmine\event\Listener;
@@ -62,8 +61,7 @@ class API extends PluginBase implements Listener
             if ($packet->transactionType === 0 && $this->chest[$player->getName()]) {
                 /** @var NetworkInventoryAction $action */
                 $action = $packet->actions[0];
-                $this->getServer()->getPluginManager()->callEvent(new InventoryClickEvent($this, $player, $action->oldItem, $action->inventorySlot, $this->chest[$player->getName()][0]));
-                $this->getServer()->getPluginManager()->callEvent($ev = new CloseChestEvent($this, $player, $this->chest[$player->getName()][0]));
+                $this->getServer()->getPluginManager()->callEvent($ev = new InventoryClickEvent($this, $player, $action->oldItem, $action->inventorySlot, $this->chest[$player->getName()][0]));
                 if (!$ev->isCancelled()) {
                     $pk = new ContainerClosePacket;
                     $pk->windowId = WindowTypes::MINECART_CHEST;

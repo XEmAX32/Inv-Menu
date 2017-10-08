@@ -6,11 +6,12 @@ namespace InventoryMenu\event;
 
 
 use InventoryMenu\API;
+use pocketmine\event\Cancellable;
 use pocketmine\event\plugin\PluginEvent;
 use pocketmine\item\Item;
 use pocketmine\Player;
 
-class InventoryClickEvent extends PluginEvent
+class InventoryClickEvent extends PluginEvent implements Cancellable
 {
     public static $handlerList = null;
     /** @var  Player $player */
