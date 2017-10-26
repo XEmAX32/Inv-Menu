@@ -203,3 +203,4 @@ class Main extends PluginBase implements Listener
             unset($this->inv[$player->getName()]);
     }
 }
+?>
